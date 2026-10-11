@@ -1,0 +1,554 @@
+(kicad_sch
+	(version 20231120)
+	(generator "eeschema")
+	(generator_version "8.0")
+	(uuid "556cc3b9-148e-4621-9262-fb1117456155")
+	(paper "User" 180 180)
+	(title_block
+		(title "Payload 1")
+		(date "2026-09-28")
+		(company "EEPISAT")
+		(comment 1 "Blog Diagram")
+	)
+	(lib_symbols)
+	(junction
+		(at 110.998 75.946)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "eb62774f-7e0d-4c4a-a909-3ec5623b9558")
+	)
+	(wire
+		(pts
+			(xy 110.998 94.996) (xy 119.888 94.996)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2870fb71-3c40-4264-9409-7e02fe0c241a")
+	)
+	(wire
+		(pts
+			(xy 107.95 49.276) (xy 119.888 49.276)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2cf6da81-def8-4049-8e0f-9fc34bcffa19")
+	)
+	(wire
+		(pts
+			(xy 73.406 84.582) (xy 73.406 99.568)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2dd86a7f-c02c-493d-bf11-f1f4efd250c7")
+	)
+	(wire
+		(pts
+			(xy 99.822 75.946) (xy 110.998 75.946)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "34fe9bda-4a03-485e-bfa7-63e8f1f3574f")
+	)
+	(wire
+		(pts
+			(xy 105.156 84.582) (xy 92.456 84.582)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "5004b9fe-e853-4b93-9b7d-1ecbf1d16ca1")
+	)
+	(wire
+		(pts
+			(xy 110.998 75.946) (xy 110.998 71.12)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "588a5fa9-8377-4ed6-81a5-7a2ae31893ad")
+	)
+	(wire
+		(pts
+			(xy 85.09 80.264) (xy 85.09 84.582)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "63413451-d232-4146-afba-0dbdbf2e8b74")
+	)
+	(wire
+		(pts
+			(xy 56.896 70.612) (xy 56.896 70.866)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "8671053c-fe77-4de3-98e7-10f90c71c9bb")
+	)
+	(wire
+		(pts
+			(xy 77.978 70.866) (xy 56.896 70.866)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "8ff98de0-5fd7-4d06-a28b-5f45c0fd0565")
+	)
+	(wire
+		(pts
+			(xy 92.456 80.264) (xy 92.456 84.582)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "90b90477-066e-45f0-b95c-da0f2a3a42ab")
+	)
+	(wire
+		(pts
+			(xy 110.998 75.946) (xy 110.998 94.996)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9175e827-ff15-47e8-85e3-302d422655d7")
+	)
+	(wire
+		(pts
+			(xy 105.156 99.822) (xy 105.156 84.582)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9740c6c1-2cd3-4252-9d57-791bf927607d")
+	)
+	(wire
+		(pts
+			(xy 110.998 71.12) (xy 119.888 71.12)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a6157a3e-cbd2-4a6a-93a0-c192741ec012")
+	)
+	(wire
+		(pts
+			(xy 99.822 69.596) (xy 107.95 69.596)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a9f264f6-2843-42db-bfc5-a3c01400f6de")
+	)
+	(wire
+		(pts
+			(xy 107.95 69.596) (xy 107.95 49.276)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b9a1c426-26b1-486a-950e-5326b5b55b99")
+	)
+	(wire
+		(pts
+			(xy 88.9 50.292) (xy 88.9 63.754)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "dc21f201-ed94-4dbe-b904-70f81a5a39ae")
+	)
+	(wire
+		(pts
+			(xy 73.406 84.582) (xy 85.09 84.582)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "fa02a73f-0ddb-4539-a866-620b4a58e459")
+	)
+	(text "I2C"
+		(exclude_from_sim no)
+		(at 102.362 74.93 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "d9750851-5434-4a95-9982-db7685ac30bd")
+	)
+	(text "UART"
+		(exclude_from_sim no)
+		(at 103.124 68.834 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "eee5e62f-6b59-4537-9017-47414c5b2135")
+	)
+	(sheet
+		(at 119.888 87.376)
+		(size 21.844 16.51)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+			(color 0 0 0 1)
+		)
+		(fill
+			(color 255 237 4 1.0000)
+		)
+		(uuid "105269ea-023d-4b5c-85a1-56ff3f65415a")
+		(property "Sheetname" "Preassure Sensor"
+			(at 119.888 86.6644 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "PreassureSensor.kicad_sch"
+			(at 119.888 104.4706 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "Payload 1"
+				(path "/556cc3b9-148e-4621-9262-fb1117456155"
+					(page "4")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 38.862 57.15)
+		(size 18.034 27.686)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+			(color 0 0 0 1)
+		)
+		(fill
+			(color 200 12 20 1.0000)
+		)
+		(uuid "178d688a-35f6-419d-b1d6-50f0896050c4")
+		(property "Sheetname" "Power"
+			(at 38.862 56.4384 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "Power.kicad_sch"
+			(at 38.862 85.4206 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(property "Field2" ""
+			(at 38.862 57.15 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(instances
+			(project "Payload 1"
+				(path "/556cc3b9-148e-4621-9262-fb1117456155"
+					(page "3")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 62.738 99.568)
+		(size 21.844 16.51)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+			(color 0 0 0 1)
+		)
+		(fill
+			(color 255 237 4 1.0000)
+		)
+		(uuid "32c7ddb8-f970-46d4-b3d9-5861a1c08dd6")
+		(property "Sheetname" "Aktuator"
+			(at 62.738 98.8564 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "Aktuator.kicad_sch"
+			(at 62.738 116.6626 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "Payload 1"
+				(path "/556cc3b9-148e-4621-9262-fb1117456155"
+					(page "8")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 77.978 63.754)
+		(size 21.844 16.51)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+			(color 0 0 0 1)
+		)
+		(fill
+			(color 255 237 4 1.0000)
+		)
+		(uuid "372b0dc7-e78f-4ed6-8cc4-6784c0aa5cea")
+		(property "Sheetname" "MCU"
+			(at 77.978 63.0424 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "MCU.kicad_sch"
+			(at 77.978 80.8486 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "Payload 1"
+				(path "/556cc3b9-148e-4621-9262-fb1117456155"
+					(page "2")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 93.726 99.822)
+		(size 21.844 16.51)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+			(color 0 0 0 1)
+		)
+		(fill
+			(color 255 237 4 1.0000)
+		)
+		(uuid "4506c3f7-0805-4fd8-a152-eced00055111")
+		(property "Sheetname" "Detonator"
+			(at 93.726 99.1104 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "detonator.kicad_sch"
+			(at 93.726 116.9166 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "Payload 1"
+				(path "/556cc3b9-148e-4621-9262-fb1117456155"
+					(page "9")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 119.888 41.402)
+		(size 21.844 16.51)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+			(color 0 0 0 1)
+		)
+		(fill
+			(color 255 237 4 1.0000)
+		)
+		(uuid "5d151e28-db1f-4973-8cef-49c1e765d4ae")
+		(property "Sheetname" "GPS"
+			(at 119.888 40.6904 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "GPS.kicad_sch"
+			(at 119.888 58.4966 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "Payload 1"
+				(path "/556cc3b9-148e-4621-9262-fb1117456155"
+					(page "7")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 77.978 34.036)
+		(size 21.844 16.51)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+			(color 0 0 0 1)
+		)
+		(fill
+			(color 255 237 4 1.0000)
+		)
+		(uuid "bc164f7d-3081-4b2b-b407-03d023e717b0")
+		(property "Sheetname" "LoRa"
+			(at 77.978 33.3244 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "LoRa.kicad_sch"
+			(at 77.978 51.1306 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(property "Field2" ""
+			(at 77.978 34.036 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(instances
+			(project "Payload 1"
+				(path "/556cc3b9-148e-4621-9262-fb1117456155"
+					(page "6")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 119.888 64.008)
+		(size 21.844 16.51)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+			(color 0 0 0 1)
+		)
+		(fill
+			(color 255 237 4 1.0000)
+		)
+		(uuid "bd37c76a-3547-41ff-9aea-10ddd9f19852")
+		(property "Sheetname" "IMU_Sensor"
+			(at 119.888 63.2964 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "Imu.kicad_sch"
+			(at 119.888 81.1026 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(property "Field2" ""
+			(at 119.888 64.008 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(instances
+			(project "Payload 1"
+				(path "/556cc3b9-148e-4621-9262-fb1117456155"
+					(page "5")
+				)
+			)
+		)
+	)
+	(sheet_instances
+		(path "/"
+			(page "1")
+		)
+	)
+)
