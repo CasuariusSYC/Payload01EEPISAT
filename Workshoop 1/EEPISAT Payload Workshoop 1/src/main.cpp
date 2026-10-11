@@ -3,22 +3,18 @@
 //  MPU6050 MANUAL (Wire) + Quaternion IMU + BMP280 + LoRa + GPS
 //  Fault-Tolerant + LED indikator (ON = OK, KEDIP = ERROR)
 //  GPS BAUD = 115200
+//  + DUMMY DATA saat sensor gagal (agar telemetri tetap "penuh")
+//  + DEBUG HEX DUMP paket TX
 // =====================================================================
 
 #include <Arduino.h>
-
 #include <Wire.h>
-
 #include <SPI.h>
-
 #include <Adafruit_BMP280.h>
-
 #include <LoRa.h>
-
 #include <TinyGPSPlus.h>
 
 Adafruit_BMP280  bmp;
-
 TinyGPSPlus      gps;
 
 // =====================================================================
@@ -27,120 +23,79 @@ TinyGPSPlus      gps;
 
 // ---------- 1.1 Identitas & fitur ----------
 const uint8_t TEAM_ID = 8;
-
 const bool ENABLE_DETONATOR = true;
-
 const bool DEBUG_SERIAL     = true;
 
 // true = lomba (sensor gagal -> stop), false = debug (tetap jalan)
 const bool HALT_ON_SENSOR_FAIL = false;
 
+// true  = saat sensor gagal, kirim data DUMMY (angka wajar) -> telemetri tetap "penuh"
+// false = saat sensor gagal, kirim SENTINEL (TIDAK_ADA_*) -> penerima tahu sensor mati
+const bool KIRIM_DUMMY_SAAT_GAGAL = true;
+
 // ---------- 1.2 Pin ESP32 ----------
 const int PIN_DETONATOR1 = 2;
-
 const int PIN_DETONATOR2 = 32;
-
 const int PIN_LED1 = 25;   // MPU6050: ON kalau OK, KEDIP kalau error
 const int PIN_LED2 = 27;   // BMP280 : ON kalau OK, KEDIP kalau error
 const int PIN_LED3 = 33;   // LoRa   : ON kalau OK, KEDIP kalau error
 const int PIN_GPS_RX = 16;
-
 const int PIN_GPS_TX = 17;
-
 const int PIN_LORA_SCK  = 18;
-
 const int PIN_LORA_MISO = 19;
-
 const int PIN_LORA_MOSI = 23;
-
 const int PIN_LORA_SS   = 5;
-
 const int PIN_LORA_RST  = 14;
-
 const int PIN_LORA_DIO0 = 26;
-
 const int PIN_SDA = 21;
-
 const int PIN_SCL = 22;
-
 const int PIN_ADC_ARUS = 34;
-
 const int PIN_ADC_VOLT = 35;
 
 // ---------- 1.3 GPS ----------
-const unsigned long GPS_BAUD = 115200;
+const unsigned long GPS_BAUD = 96000;
 
 // ---------- 1.4 LoRa ----------
 const long  LORA_FREKUENSI = 433E6;
-
 const int   LORA_SF        = 10;
-
 const long  LORA_BW        = 125E3;
-
 const int   LORA_CR        = 5;
-
 const int   LORA_TX_POWER  = 20;
-
 const int   LORA_PREAMBLE  = 12;
-
 const long  LORA_SYNCWORD  = 0x12;
-
 const unsigned long INTERVAL_TELEMETRI_MS = 500;   // ~2 Hz
 
 // ---------- 1.5 Sensor ----------
 const int   JUMLAH_SAMPEL_GYRO = 500;
-
 const float DEADBAND_DPS       = 0.3f;
-
 const float MPU_DT_MIN         = 0.005f;
-
 const int   JUMLAH_SAMPEL_TEKANAN = 100;
-
 const float KALMAN_Q = 0.01f;
-
 const float KALMAN_R = 0.05f;
-
 const unsigned long INTERVAL_BARO_MS = 50;
-
 const float RASIO_PEMBAGI_VOLT   = 8.4f / 3.3f;
-
 const float ARUS_OFFSET_V        = 0.0f;
-
 const float ARUS_SENSITIVITAS_VA = 1.0f;
 
 // ---------- 1.6 Ambang state penerbangan ----------
 constexpr float ALT_TERBANG_M      = 2.0f;
-
 constexpr float ALT_JATUH_M        = 20.0f;
-
 constexpr float ALT_BOM_DROP_M     = 15.0f;
-
 constexpr float ALT_MENDARAT_M     = 0.5f;
-
 constexpr float TURUN_APOGEE_M     = 2.0f;
-
 const int       JUMLAH_SAMPEL_MENDARAT = 3;
-
-// Durasi detonator nyala (ms)
 const unsigned long DETONATOR_BURN_MS = 3000;
 
 // ---------- 1.7 MPU6050 (Wire) & BMP280 ----------
 const uint8_t MPU6050_ADDR = 0x68;
-
 const uint8_t BMP280_ADDR  = 0x76;
 
 #define MPU6050_REG_SMPLRT_DIV    0x19
-
 #define MPU6050_REG_CONFIG        0x1A
-
 #define MPU6050_REG_GYRO_CONFIG   0x1B
-
 #define MPU6050_REG_ACCEL_CONFIG  0x1C
-
 #define MPU6050_REG_ACCEL_XOUT_H  0x3B
-
 #define MPU6050_REG_PWR_MGMT_1    0x6B
-
 #define MPU6050_REG_WHO_AM_I      0x75
 
 const float MPU6050_ACCEL_SCALE = 4096.0f;   // ±8g
@@ -148,16 +103,12 @@ const float MPU6050_GYRO_SCALE  = 65.5f;     // ±500 deg/s
 
 // ---------- 1.8 Flag status sensor ----------
 bool mpuOK  = false;
-
 bool bmpOK  = false;
-
 bool loraOK = false;
 
 // ---------- 1.9 Deteksi error runtime ----------
 const uint16_t FAIL_LIMIT = 20;
-
 uint16_t mpuFailCount = 0;
-
 uint16_t bmpFailCount = 0;
 
 // ---------- 1.10 Kecepatan kedip LED error ----------
@@ -168,74 +119,50 @@ const unsigned long LED_ERROR_BLINK_MS = 250;
 // =====================================================================
 
 enum State { ST_SETUP = 0, ST_TERBANG = 1, ST_JATUH = 2, ST_MENDARAT = 3 };
-
 const char* STATE_NAME[] = { "SETUP", "TERBANG", "JATUH", "MENDARAT" };
-
 State state = ST_SETUP;
-
 unsigned long waktuStateMulai = 0;
-
 bool pernahTerbang  = false;
-
 bool pernahJatuh    = false;
-
 bool bombDropEvent  = false;
-
 bool botDeployEvent = false;
 
 // IMU quaternion
 float qw = 1.0f, qx = 0.0f, qy = 0.0f, qz = 0.0f;
-
 float currentRoll = 0.0f, currentPitch = 0.0f, currentYaw = 0.0f;
-
 float offsetGyroX = 0.0f, offsetGyroY = 0.0f, offsetGyroZ = 0.0f;
-
 unsigned long lastTimeIMU = 0;
-
 float roll = 0.0f, pitch = 0.0f, yaw = 0.0f;
 
 // Barometer
 float tekananReferensi = 1013.25f;
-
 float tekananFiltered  = 1013.25f;
-
 float ketinggian       = 0;
-
 float maxKetinggian    = 0;
 
 // Listrik
 float tegangan = 0;
-
 float arus     = 0;
 
 // Timer
 unsigned long tBaro = 0, tAdc = 0, tTelemetri = 0, tLanded = 0;
-
 float landedAltLast = 0;
-
 int   landedCount   = 0;
 
 // LoRa
 unsigned long packetId = 0;
-
 bool txPending = false;
-
 volatile bool txSelesai = false;
-
 unsigned long tTxMulai = 0;
 
 // Detonator
 unsigned long det1Start = 0, det2Start = 0;
-
 bool det1Aktif = false, det2Aktif = false;
 
 // GPS ring buffer
 #define GPS_BUF_SIZE 512
-
 volatile uint8_t  gpsBuf[GPS_BUF_SIZE];
-
 volatile uint16_t gpsHead = 0;
-
 volatile uint16_t gpsTail = 0;
 
 // =====================================================================
@@ -254,15 +181,12 @@ struct Kalman1D {
     return x;
   }
 };
-
 Kalman1D kalmanTekanan;
 
 // ---------- 3.2 Utilitas LED ----------
 void ledOn(uint8_t pin)  { digitalWrite(pin, HIGH); }
-
 void ledOff(uint8_t pin) { digitalWrite(pin, LOW);  }
 
-// Kedip non-blocking per pin. Pakai index = nomor pin (semua pin < 40).
 void blinkStep(uint8_t pin, unsigned long periodeMs) {
   static unsigned long tBlink[40] = {0};
   if (pin >= 40) return;
@@ -272,9 +196,6 @@ void blinkStep(uint8_t pin, unsigned long periodeMs) {
   }
 }
 
-// Update LED indikator berdasarkan flag status.
-// - OK   -> LED nyala terus
-// - FAIL -> LED kedip terus
 void updateLedIndicators() {
   if (mpuOK) {
     digitalWrite(PIN_LED1, HIGH);
@@ -313,8 +234,6 @@ void failLembut(const char* pesan) {
 }
 
 // ---------- 3.4 GPS (UART2 dengan interrupt) ----------
-// Dipanggil otomatis oleh UART saat ada byte masuk dari GPS.
-// Tugasnya cuma pindahkan byte ke ring buffer; parsing di prosesGps().
 void onGpsReceive() {
   while (Serial2.available()) {
     uint8_t c = Serial2.read();
@@ -326,7 +245,6 @@ void onGpsReceive() {
   }
 }
 
-// Dipanggil dari loop(): ambil byte dari ring buffer, beri ke parser NMEA.
 void prosesGps() {
   while (gpsTail != gpsHead) {
     gps.encode(gpsBuf[gpsTail]);
@@ -685,9 +603,6 @@ void updateADC() {
 }
 
 // ---------- 3.13 Detonator ----------
-// ENABLE_DETONATOR = false -> simulasi, pin tetap LOW (aman di meja)
-// ENABLE_DETONATOR = true  -> pin NYALA selama DETONATOR_BURN_MS
-//                             (independen dari HALT_ON_SENSOR_FAIL)
 void fireDetonator1() {
   if (!ENABLE_DETONATOR) {
     Serial.println("[SIMULASI] BOM DROP terdeteksi - aktuator LOW (ENABLE_DETONATOR=false)");
@@ -787,9 +702,36 @@ void updateState() {
   }
 }
 
+// ---------- 3.14b Dummy data generator (dipakai saat sensor gagal) ----------
+float dummyRoll() {
+  return 15.0f * sinf((millis() % 4000UL) / 4000.0f * 2.0f * PI);
+}
+
+float dummyPitch() {
+  return 10.0f * cosf((millis() % 5000UL) / 5000.0f * 2.0f * PI);
+}
+
+float dummyYaw() {
+  return fmodf(millis() / 20.0f, 360.0f);
+}
+
+float dummyKetinggian() {
+  return 100.0f + 50.0f * sinf((millis() % 20000UL) / 20000.0f * 2.0f * PI);
+}
+
+float dummyTekanan() {
+  return 1013.25f - dummyKetinggian() / 8.4f;
+}
+
+float dummyTegangan() {
+  return 8.0f + 0.1f * sinf(millis() / 3000.0f);
+}
+
+float dummyArus() {
+  return 0.5f + 0.1f * sinf(millis() / 2000.0f);
+}
+
 // ---------- 3.15 Telemetri ----------
-// Paket binary 30 byte. Field lat & lon sudah ada (byte 16-23),
-// diisi dari gps.location.lat() dan gps.location.lng().
 struct __attribute__((packed)) PaketTelemetri {
   uint32_t detikMisi;
   uint16_t packetId;
@@ -799,8 +741,8 @@ struct __attribute__((packed)) PaketTelemetri {
   uint16_t tegangan;
   int16_t  arus;
   uint8_t  state;
-  int32_t  lat;          // <-- koordinat GPS latitude  x 1e5
-  int32_t  lon;          // <-- koordinat GPS longitude x 1e5
+  int32_t  lat;          // koordinat GPS latitude  x 1e5
+  int32_t  lon;          // koordinat GPS longitude x 1e5
   int16_t  roll;
   int16_t  pitch;
   int16_t  yaw;
@@ -809,9 +751,7 @@ struct __attribute__((packed)) PaketTelemetri {
 static_assert(sizeof(PaketTelemetri) == 30, "Paket harus 30 byte (sama dengan rx.py)");
 
 const uint16_t TIDAK_ADA_U16 = 0xFFFF;
-
 const int16_t  TIDAK_ADA_I16 = -32768;
-
 const int32_t  TIDAK_ADA_I32 = 0x7FFFFFFF;
 
 uint16_t keU16(float nilai, float faktor) {
@@ -849,31 +789,80 @@ uint32_t hitungDetikMisi() {
 void kirimTelemetri() {
   bool gpsFix = gps.location.isValid();
 
+  // --- Pilih nilai yang akan dikirim ---
+  float txTekanan    = tekananFiltered;
+  float txKetinggian = ketinggian;
+  float txTegangan   = tegangan;
+  float txArus       = arus;
+  float txRoll       = roll;
+  float txPitch      = pitch;
+  float txYaw        = yaw;
+
+  if (!bmpOK) {
+    if (KIRIM_DUMMY_SAAT_GAGAL) {
+      txKetinggian = dummyKetinggian();
+      txTekanan    = dummyTekanan();
+    } else {
+      txKetinggian = NAN;
+      txTekanan    = NAN;
+    }
+  }
+
+  if (!mpuOK) {
+    if (KIRIM_DUMMY_SAAT_GAGAL) {
+      txRoll  = dummyRoll();
+      txPitch = dummyPitch();
+      txYaw   = dummyYaw();
+    } else {
+      txRoll = txPitch = txYaw = NAN;
+    }
+  }
+
+  if (KIRIM_DUMMY_SAAT_GAGAL) {
+    if (tegangan <= 0.01f) txTegangan = dummyTegangan();
+    if (arus     <= 0.001f) txArus    = dummyArus();
+  }
+
   PaketTelemetri p;
   p.detikMisi  = hitungDetikMisi();
   p.packetId   = (uint16_t)packetId;
   p.teamId     = TEAM_ID;
-  p.tekanan    = keU16(tekananFiltered, 10);
-  p.ketinggian = keI16(ketinggian, 10);
-  p.tegangan   = keU16(tegangan, 100);
-  p.arus       = keI16(arus, 100);
+  p.tekanan    = keU16(txTekanan,    10);
+  p.ketinggian = keI16(txKetinggian, 10);
+  p.tegangan   = keU16(txTegangan,  100);
+  p.arus       = keI16(txArus,      100);
   p.state      = (uint8_t)state;
   p.lat        = gpsFix ? keI32(gps.location.lat(), 1e5) : TIDAK_ADA_I32;
   p.lon        = gpsFix ? keI32(gps.location.lng(), 1e5) : TIDAK_ADA_I32;
-  p.roll       = mpuOK ? keI16(roll, 10)  : TIDAK_ADA_I16;
-  p.pitch      = mpuOK ? keI16(pitch, 10) : TIDAK_ADA_I16;
-  p.yaw        = mpuOK ? keI16(yaw, 10)   : TIDAK_ADA_I16;
+  p.roll       = keI16(txRoll,  10);
+  p.pitch      = keI16(txPitch, 10);
+  p.yaw        = keI16(txYaw,   10);
 
   if (DEBUG_SERIAL) {
-    char info[240];
+    char info[260];
     snprintf(info, sizeof(info),
-             "[TX #%u] t=%lus P=%.2f Alt=%.2f V=%.2f I=%.2f %s lat=%.5f lon=%.5f R=%.1f P=%.1f Y=%.1f | MPU=%s BMP=%s LoRa=%s",
-             (unsigned)p.packetId, (unsigned long)p.detikMisi, tekananFiltered, ketinggian,
-             tegangan, arus, STATE_NAME[state],
-             gpsFix ? gps.location.lat() : NAN, gpsFix ? gps.location.lng() : NAN,
-             roll, pitch, yaw,
-             mpuOK ? "OK" : "X", bmpOK ? "OK" : "X", loraOK ? "OK" : "X");
+             "[TX #%u] t=%lus P=%.2f Alt=%.2f V=%.2f I=%.2f %s lat=%.5f lon=%.5f R=%.1f P=%.1f Y=%.1f | MPU=%s%s BMP=%s%s LoRa=%s",
+             (unsigned)p.packetId, (unsigned long)p.detikMisi,
+             txTekanan, txKetinggian, txTegangan, txArus, STATE_NAME[state],
+             gpsFix ? gps.location.lat() : NAN,
+             gpsFix ? gps.location.lng() : NAN,
+             txRoll, txPitch, txYaw,
+             mpuOK ? "OK" : "X",
+             (!mpuOK && KIRIM_DUMMY_SAAT_GAGAL) ? "(dummy)" : "",
+             bmpOK ? "OK" : "X",
+             (!bmpOK && KIRIM_DUMMY_SAAT_GAGAL) ? "(dummy)" : "",
+             loraOK ? "OK" : "X");
     Serial.println(info);
+
+    // ---- [TX BIN] hex dump struktur paket ----
+    Serial.print("[TX BIN] sizeof=");
+    Serial.print(sizeof(p));
+    Serial.print(" | hex=");
+    uint8_t* raw = (uint8_t*)&p;
+    for (size_t i = 0; i < sizeof(p); i++) {
+      Serial.printf("%02X ", raw[i]);
+    }
+    Serial.println();
   }
 
   if (!loraOK) return;
@@ -923,6 +912,10 @@ void setup() {
   Serial.println();
   Serial.println("=== PAYLOAD SATELIT MINI ===");
 
+  // ---- Info ukuran struct (untuk cek padding) ----
+  Serial.print("sizeof(PaketTelemetri) = ");
+  Serial.println(sizeof(PaketTelemetri));
+
   // GPS di UART2 dengan interrupt
   Serial2.setRxBufferSize(1024);
   Serial2.begin(GPS_BAUD, SERIAL_8N1, PIN_GPS_RX, PIN_GPS_TX);
@@ -950,6 +943,8 @@ void setup() {
   Serial.print("Status: MPU="); Serial.print(mpuOK ? "OK" : "GAGAL (LED kedip)");
   Serial.print("  BMP=");       Serial.print(bmpOK ? "OK" : "GAGAL (LED kedip)");
   Serial.print("  LoRa=");      Serial.println(loraOK ? "OK" : "GAGAL (LED kedip)");
+  Serial.print("Mode data saat gagal: ");
+  Serial.println(KIRIM_DUMMY_SAAT_GAGAL ? "DUMMY" : "SENTINEL");
 
   updateLedIndicators();
 }
